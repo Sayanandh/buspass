@@ -1,0 +1,604 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Buses - Admin Panel{% endblock %}
+
+{% block content %}
+<!-- Admin Navigation -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand" href="/admin/dashboard">
+            <i class="fas fa-bus me-2"></i>E-Pass Admin
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="adminNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin/dashboard">
+                        <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="/admin/buses">
+                        <i class="fas fa-bus me-1"></i>Manage Buses
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin/students">
+                        <i class="fas fa-users me-1"></i>Manage Students
+                    </a>
+                </li>
+            </ul>
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin/logout">
+                        <i class="fas fa-sign-out-alt me-1"></i>Logout
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid px-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">Manage Buses</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Manage Buses</li>
+                </ol>
+            </nav>
+        </div>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBusModal">
+            <i class="fas fa-plus me-2"></i>Add New Bus
+        </button>
+    </div>
+
+    <!-- Buses Table Card -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3">
+            <h5 class="card-title mb-0">Bus List</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="px-4">Bus Number</th>
+                            <th>Route</th>
+                            <th>Departure Time</th>
+                            <th class="text-center">Available Seats</th>
+                            <th class="text-end">Price</th>
+                            <th class="text-end px-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for bus in buses %}
+                        <tr>
+                            <td class="px-4 fw-medium">{{ bus.bus_number }}</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                                    <span>{{ bus.source }}</span>
+                                    <i class="fas fa-arrow-right mx-2 text-muted"></i>
+                                    <span>{{ bus.destination }}</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <i class="far fa-clock text-info me-2"></i>
+                                    {{ bus.departure_time }}
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-success-subtle text-success">
+                                    <i class="fas fa-chair me-1"></i>{{ bus.available_seats }}
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <span class="fw-medium">₹{{ bus.price }}</span>
+                            </td>
+                            <td class="text-end px-4">
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="editBus({{ bus.id }})" title="Edit Bus">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-info" onclick="manageSeats({{ bus.id }})" title="Manage Seats">
+                                        <i class="fas fa-chair"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteBus({{ bus.id }})" title="Delete Bus">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% if not buses %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">
+                                <i class="fas fa-bus-alt fa-3x mb-3"></i>
+                                <p class="mb-0">No buses found. Add a new bus to get started.</p>
+                            </td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Bus Modal -->
+<div class="modal fade" id="addBusModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content border-0">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus-circle me-2"></i>Add New Bus
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addBusForm">
+                    <div class="mb-3">
+                        <label class="form-label">Bus Number</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-bus"></i></span>
+                            <input type="text" class="form-control" name="bus_number" required placeholder="Enter bus number">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Source</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+                            <input type="text" class="form-control" name="source" required placeholder="Enter source location">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Destination</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-map-marker"></i></span>
+                            <input type="text" class="form-control" name="destination" required placeholder="Enter destination">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Departure Time</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="far fa-clock"></i></span>
+                            <input type="time" class="form-control" name="departure_time" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Price (₹)</label>
+                        <div class="input-group">
+                            <span class="input-group-text">₹</span>
+                            <input type="number" class="form-control" name="price" required placeholder="Enter ticket price">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-primary" onclick="addBus()">
+                    <i class="fas fa-plus me-1"></i>Add Bus
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Manage Seats Modal -->
+<div class="modal fade" id="manageSeatsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-chair me-2"></i>Manage Bus Seats
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label class="form-label">Select Date</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="far fa-calendar"></i></span>
+                            <input type="date" class="form-control" id="seatDate" onchange="loadBusSeats()">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Seat Status</label>
+                        <div class="d-flex gap-2">
+                            <span class="badge bg-success d-flex align-items-center">
+                                <i class="fas fa-check-circle me-1"></i>Available
+                            </span>
+                            <span class="badge bg-warning d-flex align-items-center">
+                                <i class="fas fa-clock me-1"></i>Reserved
+                            </span>
+                            <span class="badge bg-danger d-flex align-items-center">
+                                <i class="fas fa-times-circle me-1"></i>Booked
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bus Layout -->
+                <div class="bus-layout my-4">
+                    <div class="bus-front text-center mb-3">
+                        <i class="fas fa-bus fa-3x text-primary"></i>
+                        <div class="mt-2 text-muted small">Front of Bus</div>
+                    </div>
+                    <div class="seats-container">
+                        <!-- Seats will be dynamically added here -->
+                    </div>
+                </div>
+
+                <!-- Reserved Seats List -->
+                <div class="reserved-seats mt-4">
+                    <h6 class="d-flex align-items-center border-bottom pb-2 mb-3">
+                        <i class="fas fa-list-alt me-2"></i>Reserved Seats
+                    </h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Seat Number</th>
+                                    <th>Reason</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reservedSeatsList">
+                                <!-- Reserved seats will be listed here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* General Styles */
+body {
+    background-color: #f8f9fa;
+}
+
+.card {
+    border-radius: 0.5rem;
+}
+
+.btn-group .btn {
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.375rem;
+    margin: 0 0.125rem;
+}
+
+.badge {
+    padding: 0.5rem 0.75rem;
+    font-weight: 500;
+}
+
+/* Bus Layout Styles */
+.bus-layout {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: #fff;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+}
+
+.bus-front {
+    background-color: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.seats-container {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.75rem;
+    padding: 1.5rem;
+    background-color: #fff;
+    border-radius: 0.5rem;
+    box-shadow: inset 0 0.125rem 0.25rem rgba(0,0,0,0.05);
+}
+
+.seat-box {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #198754;
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    font-size: 0.875rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+}
+
+.seat-box:hover:not(.booked):not(.reserved) {
+    transform: translateY(-0.125rem);
+    box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.1);
+}
+
+.seat-box.booked {
+    background-color: #dc3545;
+    cursor: not-allowed;
+    opacity: 0.75;
+}
+
+.seat-box.reserved {
+    background-color: #ffc107;
+    color: #000;
+}
+
+.seat-box.selected {
+    background-color: #0d6efd;
+    transform: translateY(-0.125rem);
+    box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.1);
+}
+
+/* Add spacing between seats */
+.seats-container > div:nth-child(3n) {
+    margin-right: 1.25rem;
+}
+
+/* Table Styles */
+.table th {
+    font-weight: 600;
+    color: #495057;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .container-fluid {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .seats-container {
+        gap: 0.5rem;
+        padding: 1rem;
+    }
+    
+    .seat-box {
+        font-size: 0.75rem;
+    }
+    
+    .bus-layout {
+        padding: 1rem;
+    }
+
+    .badge {
+        padding: 0.375rem 0.5rem;
+        font-size: 0.75rem;
+    }
+}
+</style>
+
+<script>
+let currentBusId = null;
+
+function manageSeats(busId) {
+    currentBusId = busId;
+    const modal = new bootstrap.Modal(document.getElementById('manageSeatsModal'));
+    modal.show();
+    
+    // Set min date to today
+    const dateInput = document.getElementById('seatDate');
+    const today = new Date().toISOString().split('T')[0];
+    dateInput.min = today;
+    dateInput.value = today;
+    
+    loadBusSeats();
+}
+
+async function loadBusSeats() {
+    const date = document.getElementById('seatDate').value;
+    if (!date) return;
+
+    try {
+        const response = await fetch(`/api/admin/bus/${currentBusId}/seats?date=${date}`);
+        const data = await response.json();
+
+        const seatsContainer = document.querySelector('.seats-container');
+        seatsContainer.innerHTML = '';
+
+        // Create seat boxes (45 seats in 3x2 format)
+        for (let row = 1; row <= 9; row++) {
+            // Left side (3 seats)
+            for (let i = 1; i <= 3; i++) {
+                const seatNumber = (row - 1) * 5 + i;
+                createSeatBox(seatNumber, data);
+            }
+            
+            // Right side (2 seats)
+            for (let i = 1; i <= 2; i++) {
+                const seatNumber = (row - 1) * 5 + i + 3;
+                createSeatBox(seatNumber, data);
+            }
+        }
+
+        // Update reserved seats list
+        updateReservedSeatsList(data.reserved_seats);
+    } catch (error) {
+        console.error('Error loading seats:', error);
+        alert('Error loading seats. Please try again.');
+    }
+}
+
+function createSeatBox(seatNumber, data) {
+    const seatBox = document.createElement('div');
+    seatBox.className = 'seat-box';
+    seatBox.textContent = seatNumber;
+    seatBox.dataset.seatNumber = seatNumber;
+
+    if (data.booked_seats.includes(seatNumber.toString())) {
+        seatBox.classList.add('booked');
+        seatBox.title = 'Booked';
+    } else if (data.reserved_seats.includes(seatNumber.toString())) {
+        seatBox.classList.add('reserved');
+        seatBox.title = 'Reserved';
+        seatBox.onclick = () => reserveSeat(seatNumber);
+    } else {
+        seatBox.title = 'Available';
+        seatBox.onclick = () => reserveSeat(seatNumber);
+    }
+
+    document.querySelector('.seats-container').appendChild(seatBox);
+}
+
+async function reserveSeat(seatNumber) {
+    const date = document.getElementById('seatDate').value;
+    if (!date) {
+        alert('Please select a date first');
+        return;
+    }
+
+    const reason = prompt('Enter reason for reservation:');
+    if (!reason) return;
+
+    try {
+        const response = await fetch(`/api/admin/bus/${currentBusId}/seats`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                seat_number: seatNumber,
+                travel_date: date,
+                reason: reason
+            })
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+            loadBusSeats(); // Reload seats to show updated status
+        } else {
+            alert(data.error || 'Error reserving seat');
+        }
+    } catch (error) {
+        console.error('Error reserving seat:', error);
+        alert('Error reserving seat. Please try again.');
+    }
+}
+
+async function deleteReservation(reservationId) {
+    if (!confirm('Are you sure you want to remove this reservation?')) return;
+
+    try {
+        const response = await fetch(`/api/admin/bus/${currentBusId}/seats/${reservationId}`, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            loadBusSeats(); // Reload seats to show updated status
+        } else {
+            const data = await response.json();
+            alert(data.error || 'Error deleting reservation');
+        }
+    } catch (error) {
+        console.error('Error deleting reservation:', error);
+        alert('Error deleting reservation. Please try again.');
+    }
+}
+
+function updateReservedSeatsList(reservedSeats) {
+    const tbody = document.getElementById('reservedSeatsList');
+    tbody.innerHTML = '';
+
+    if (reservedSeats.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="3" class="text-center text-muted">No reserved seats</td>
+            </tr>
+        `;
+        return;
+    }
+
+    reservedSeats.forEach(seat => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>Seat ${seat.seat_number}</td>
+            <td>${seat.reason}</td>
+            <td class="text-end">
+                <button class="btn btn-sm btn-outline-danger" onclick="deleteReservation(${seat.id})" title="Remove Reservation">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+// Add Bus Function
+async function addBus() {
+    const form = document.getElementById('addBusForm');
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+
+    try {
+        const response = await fetch('/api/admin/bus', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+            location.reload();
+        } else {
+            const error = await response.json();
+            alert(error.error || 'Error adding bus');
+        }
+    } catch (error) {
+        console.error('Error adding bus:', error);
+        alert('Error adding bus. Please try again.');
+    }
+}
+
+// Edit Bus Function
+async function editBus(busId) {
+    // Implement edit bus functionality
+    alert('Edit bus functionality to be implemented');
+}
+
+// Delete Bus Function
+async function deleteBus(busId) {
+    if (!confirm('Are you sure you want to delete this bus?')) return;
+
+    try {
+        const response = await fetch(`/api/admin/bus/${busId}`, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            location.reload();
+        } else {
+            const error = await response.json();
+            alert(error.error || 'Error deleting bus');
+        }
+    } catch (error) {
+        console.error('Error deleting bus:', error);
+        alert('Error deleting bus. Please try again.');
+    }
+}
+</script>
+{% endblock %} 

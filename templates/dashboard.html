@@ -1,0 +1,448 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - E-Pass System{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <div class="row g-4">
+        <!-- Sidebar -->
+        <div class="col-lg-11 col-md-6">
+            <div class="card shadow-sm sticky-top" style="top: 1rem;">
+                <div class="card-body p-4">
+                    <!-- Profile Section -->
+                    <div class="text-center mb-4">
+                        <div class="avatar bg-primary text-white rounded-circle mx-auto mb-3">
+                            {{ user.full_name[0] }}
+                        </div>
+                        <h5 class="mb-2">{{ user.full_name }}</h5>
+                        <p class="text-muted mb-0">{{ user.college_id }}</p>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <!-- Navigation -->
+                    <div class="nav flex-column nav-pills">
+                        <a href="#searchSection" class="nav-link mb-3 d-flex align-items-center" id="searchTab">
+                            <i class="fas fa-search fa-fw me-3"></i>
+                            <span>Search Buses</span>
+                        </a>
+                        <a href="#passesSection" class="nav-link mb-3 d-flex align-items-center" id="passesTab">
+                            <i class="fas fa-ticket-alt fa-fw me-3"></i>
+                            <span>My Passes</span>
+                        </a>
+                        <a href="#" onclick="logout()" class="nav-link text-danger d-flex align-items-center">
+                            <i class="fas fa-sign-out-alt fa-fw me-3"></i>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-lg-11 col-md-8">
+            <!-- Search Section -->
+            <div id="searchSection">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="card-title mb-0">Search Bus</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="searchBusForm">
+                            <div class="row g-4">
+                                <div class="col-lg-4 col-md-6">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="source" placeholder="From" required>
+                                        <label for="source">From</label>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4 col-md-6">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="destination" placeholder="To" required>
+                                        <label for="destination">To</label>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4 col-md-6">
+                                    <div class="form-floating">
+                                        <input type="date" class="form-control" id="travel_date" required>
+                                        <label for="travel_date">Travel Date</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-end mt-4">
+                                <button type="submit" class="btn btn-primary px-4 py-2">
+                                    <i class="fas fa-search me-2"></i>Search Buses
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Search Results -->
+                <div id="searchResults" style="display: none;">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">Available Buses</h5>
+                            <span class="text-muted small" id="resultsCount"></span>
+                        </div>
+                        <div class="card-body p-0">
+                            <div id="busResults" class="bus-results"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- My Passes Section -->
+            <div id="passesSection" style="display: none;">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">My Passes</h5>
+                        <span class="badge bg-primary" id="passCount">0 Active</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="myPasses" class="list-group list-group-flush"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.container-fluid {
+    max-width: 1920px;
+}
+
+.avatar {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.nav-link {
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    color: #495057;
+    transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+    background-color: #f8f9fa;
+    color: #0d6efd;
+    transform: translateX(5px);
+}
+
+.nav-link.active {
+    background-color: #e7f1ff;
+    color: #0d6efd;
+    font-weight: 500;
+}
+
+.nav-link i {
+    width: 20px;
+    text-align: center;
+}
+
+.form-floating > .form-control {
+    height: calc(3.5rem + 2px);
+    line-height: 1.25;
+}
+
+.bus-results {
+    max-height: calc(100vh - 300px);
+    overflow-y: auto;
+}
+
+.bus-card {
+    transition: transform 0.2s;
+    padding: 1.25rem;
+    border-bottom: 1px solid rgba(0,0,0,.125);
+}
+
+.bus-card:last-child {
+    border-bottom: none;
+}
+
+.bus-card:hover {
+    transform: translateY(-2px);
+    background-color: #f8f9fa;
+}
+
+.list-group-item-action {
+    border: none;
+    border-radius: 0.375rem;
+    margin-bottom: 0.25rem;
+}
+
+.list-group-item-action:hover {
+    background-color: #f8f9fa;
+}
+
+.list-group-item-action.active {
+    background-color: #e7f1ff;
+    border-color: #e7f1ff;
+    color: #0d6efd;
+}
+
+.badge {
+    font-weight: 500;
+    padding: 0.5em 1em;
+}
+
+@media (max-width: 992px) {
+    .sticky-top {
+        position: relative !important;
+        top: 0 !important;
+    }
+}
+</style>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadMyPasses();
+    setupTabNavigation();
+
+    // Tab Navigation
+    function setupTabNavigation() {
+        const searchTab = document.getElementById('searchTab');
+        const passesTab = document.getElementById('passesTab');
+        const searchSection = document.getElementById('searchSection');
+        const passesSection = document.getElementById('passesSection');
+
+        // Show search section by default
+        searchTab.classList.add('active');
+        searchSection.style.display = 'block';
+
+        searchTab.addEventListener('click', function(e) {
+            e.preventDefault();
+            searchTab.classList.add('active');
+            passesTab.classList.remove('active');
+            searchSection.style.display = 'block';
+            passesSection.style.display = 'none';
+        });
+
+        passesTab.addEventListener('click', function(e) {
+            e.preventDefault();
+            passesTab.classList.add('active');
+            searchTab.classList.remove('active');
+            passesSection.style.display = 'block';
+            searchSection.style.display = 'none';
+        });
+    }
+
+    // Search form submission
+    document.getElementById('searchBusForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const searchData = {
+            source: document.getElementById('source').value,
+            destination: document.getElementById('destination').value,
+            travel_date: document.getElementById('travel_date').value
+        };
+
+        fetch('/api/search-buses', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(searchData)
+        })
+        .then(response => response.json())
+        .then(buses => {
+            displayBusResults(buses);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Error searching buses. Please try again.', 'error');
+        });
+    });
+
+    function displayBusResults(buses) {
+        const resultsDiv = document.getElementById('busResults');
+        document.getElementById('searchResults').style.display = 'block';
+        
+        if (buses.length === 0) {
+            resultsDiv.innerHTML = '<div class="text-center p-4 text-muted">No buses found for this route.</div>';
+            return;
+        }
+
+        let html = '<div class="list-group list-group-flush">';
+        buses.forEach(bus => {
+            // Check seat availability for the selected date
+            const travelDate = document.getElementById('travel_date').value;
+            
+            fetch('/api/check-seats', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    bus_id: bus.id,
+                    travel_date: travelDate
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const availableSeats = data.available_seats || 0;
+                const totalSeats = data.total_seats || 45; // Default to 45 seats
+                
+                html += `
+                    <div class="list-group-item bus-card">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h5 class="mb-1">
+                                    <span class="badge bg-secondary me-2">${bus.bus_number}</span>
+                                    ${bus.source} to ${bus.destination}
+                                </h5>
+                                <p class="mb-1 text-muted">
+                                    <i class="far fa-clock me-2"></i>${bus.departure_time}
+                                    <span class="mx-3">|</span>
+                                    <i class="fas fa-chair me-2"></i>${availableSeats} seats available
+                                    <span class="mx-3">|</span>
+                                    <i class="fas fa-bus me-2"></i>${totalSeats} total seats
+                                </p>
+                            </div>
+                            <div class="col-md-4 text-md-end">
+                                <h5 class="mb-2 text-primary">₹${bus.price}</h5>
+                                <button onclick="bookTicket(${bus.id})" class="btn btn-primary btn-sm px-4" 
+                                        ${availableSeats === 0 ? 'disabled' : ''}>
+                                    ${availableSeats === 0 ? 'No Seats' : 'Book Now'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                resultsDiv.innerHTML = html;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                html += `
+                    <div class="list-group-item bus-card">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h5 class="mb-1">
+                                    <span class="badge bg-secondary me-2">${bus.bus_number}</span>
+                                    ${bus.source} to ${bus.destination}
+                                </h5>
+                                <p class="mb-1 text-muted">
+                                    <i class="far fa-clock me-2"></i>${bus.departure_time}
+                                    <span class="mx-3">|</span>
+                                    <i class="fas fa-chair me-2"></i>Error checking seats
+                                </p>
+                            </div>
+                            <div class="col-md-4 text-md-end">
+                                <h5 class="mb-2 text-primary">₹${bus.price}</h5>
+                                <button onclick="bookTicket(${bus.id})" class="btn btn-primary btn-sm px-4">
+                                    Book Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                resultsDiv.innerHTML = html;
+            });
+        });
+        html += '</div>';
+    }
+
+    function loadMyPasses() {
+        fetch('/api/my-passes')
+        .then(response => response.json())
+        .then(passes => {
+            const passesDiv = document.getElementById('myPasses');
+            const activeCount = passes.filter(p => p.status === 'ACTIVE').length;
+            document.getElementById('passCount').textContent = `${activeCount} Active`;
+
+            if (passes.length === 0) {
+                passesDiv.innerHTML = '<div class="text-center p-4 text-muted">No passes booked yet.</div>';
+                return;
+            }
+
+            let html = '';
+            passes.forEach(pass => {
+                const statusClass = pass.status === 'ACTIVE' ? 'success' : 'secondary';
+                html += `
+                    <div class="list-group-item">
+                        <div class="row align-items-center">
+                            <div class="col-md-9">
+                                <h6 class="mb-1">Bus ${pass.bus}</h6>
+                                <p class="mb-1 text-muted">
+                                    <i class="far fa-calendar me-2"></i>${pass.travel_date}
+                                </p>
+                            </div>
+                            <div class="col-md-3 text-end">
+                                <span class="badge bg-${statusClass} mb-2">${pass.status}</span>
+                                <br>
+                                <button class="btn btn-sm btn-outline-primary" onclick="viewTicket(${pass.id})">
+                                    View Pass
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            passesDiv.innerHTML = html;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('myPasses').innerHTML = 
+                '<div class="text-center p-4 text-danger">Error loading passes.</div>';
+        });
+    }
+});
+
+function bookTicket(busId) {
+    const travelDate = document.getElementById('travel_date').value;
+    
+    if (!travelDate) {
+        showToast('Please select a travel date first', 'error');
+        return;
+    }
+    
+    fetch('/api/check-seats', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            bus_id: busId,
+            travel_date: travelDate
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.available && data.available_seats > 0) {
+            window.location.href = `/book/${busId}?date=${travelDate}`;
+        } else {
+            showToast('Sorry, no seats available for this bus on the selected date.', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Error checking seat availability. Please try again.', 'error');
+    });
+}
+
+function viewTicket(passId) {
+    window.location.href = `/ticket/${passId}`;
+}
+
+function showToast(message, type = 'info') {
+    // Implement toast notification here
+    alert(message);
+}
+
+function logout() {
+    fetch('/api/logout').then(() => {
+        window.location.href = '/';
+    });
+}
+</script>
+{% endblock %} 

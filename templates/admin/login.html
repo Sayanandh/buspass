@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Login - E-Pass System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Admin Login</h5>
+            </div>
+            <div class="card-body">
+                <form id="adminLoginForm" onsubmit="return handleAdminLogin(event)">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Login</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function handleAdminLogin(event) {
+    event.preventDefault();
+    
+    const data = {
+        username: document.getElementById('username').value,
+        password: document.getElementById('password').value
+    };
+    
+    try {
+        const response = await fetch('/admin/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            window.location.href = '/admin/dashboard';
+        } else {
+            alert(result.error);
+        }
+    } catch (error) {
+        alert('Error connecting to server');
+    }
+}
+</script>
+{% endblock %} 

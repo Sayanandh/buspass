@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Students - E-Pass System{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h2>Manage Students</h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-3">
+        <div class="list-group">
+            <a href="/admin/dashboard" class="list-group-item list-group-item-action">
+                Dashboard
+            </a>
+            <a href="/admin/buses" class="list-group-item list-group-item-action">
+                Manage Buses
+            </a>
+            <a href="/admin/students" class="list-group-item list-group-item-action active">
+                Manage Students
+            </a>
+            <a href="#" onclick="adminLogout()" class="list-group-item list-group-item-action text-danger">
+                Logout
+            </a>
+        </div>
+    </div>
+    
+    <div class="col-md-9">
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Full Name</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>College ID</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentsTableBody">
+                            {% for student in students %}
+                            <tr id="student-{{ student.id }}">
+                                <td>{{ student.full_name }}</td>
+                                <td>{{ student.username }}</td>
+                                <td>{{ student.email }}</td>
+                                <td>{{ student.phone }}</td>
+                                <td>{{ student.college_id }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if student.status == 'ACTIVE' else 'danger' }}">
+                                        {{ student.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary" onclick="editStudent({{ student.id }})">Edit</button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteStudent({{ student.id }})">Delete</button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Student Modal -->
+<div class="modal fade" id="editStudentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Student</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editStudentForm">
+                    <input type="hidden" id="editStudentId">
+                    <div class="mb-3">
+                        <label for="editFullName" class="form-label">Full Name</label>
+                        <input type="text" class="form-control" id="editFullName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editUsername" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="editUsername" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editEmail" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="editEmail" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editPhone" class="form-label">Phone</label>
+                        <input type="tel" class="form-control" id="editPhone" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editCollegeId" class="form-label">College ID</label>
+                        <input type="text" class="form-control" id="editCollegeId" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editStatus" class="form-label">Status</label>
+                        <select class="form-select" id="editStatus" required>
+                            <option value="ACTIVE">Active</option>
+                            <option value="INACTIVE">Inactive</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="updateStudent()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let editStudentModal = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    editStudentModal = new bootstrap.Modal(document.getElementById('editStudentModal'));
+});
+
+function editStudent(studentId) {
+    const row = document.getElementById(`student-${studentId}`);
+    const cells = row.getElementsByTagName('td');
+    
+    document.getElementById('editStudentId').value = studentId;
+    document.getElementById('editFullName').value = cells[0].textContent.trim();
+    document.getElementById('editUsername').value = cells[1].textContent.trim();
+    document.getElementById('editEmail').value = cells[2].textContent.trim();
+    document.getElementById('editPhone').value = cells[3].textContent.trim();
+    document.getElementById('editCollegeId').value = cells[4].textContent.trim();
+    document.getElementById('editStatus').value = cells[5].textContent.trim();
+    
+    editStudentModal.show();
+}
+
+async function updateStudent() {
+    const studentId = document.getElementById('editStudentId').value;
+    const data = {
+        full_name: document.getElementById('editFullName').value,
+        username: document.getElementById('editUsername').value,
+        email: document.getElementById('editEmail').value,
+        phone: document.getElementById('editPhone').value,
+        college_id: document.getElementById('editCollegeId').value,
+        status: document.getElementById('editStatus').value
+    };
+    
+    try {
+        const response = await fetch(`/api/admin/student/${studentId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        if (response.ok) {
+            location.reload();
+        } else {
+            const result = await response.json();
+            alert(result.error);
+        }
+    } catch (error) {
+        alert('Error updating student');
+    }
+}
+
+async function deleteStudent(studentId) {
+    if (!confirm('Are you sure you want to delete this student?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/admin/student/${studentId}`, {
+            method: 'DELETE'
+        });
+        
+        if (response.ok) {
+            document.getElementById(`student-${studentId}`).remove();
+        } else {
+            const result = await response.json();
+            alert(result.error);
+        }
+    } catch (error) {
+        alert('Error deleting student');
+    }
+}
+
+function adminLogout() {
+    fetch('/api/admin/logout').then(() => {
+        window.location.href = '/admin';
+    });
+}
+</script>
+{% endblock %} 

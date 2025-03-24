@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}Payment - E-Pass System{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- Progress Bar -->
+            <div class="booking-progress mb-5">
+                <div class="progress" style="height: 4px;">
+                    <div class="progress-bar" role="progressbar" style="width: 66%"></div>
+                </div>
+                <div class="d-flex justify-content-between mt-2">
+                    <div class="progress-step completed">
+                        <div class="step-circle">1</div>
+                        <div class="step-label">Select Seat</div>
+                    </div>
+                    <div class="progress-step active">
+                        <div class="step-circle">2</div>
+                        <div class="step-label">Payment</div>
+                    </div>
+                    <div class="progress-step">
+                        <div class="step-circle">3</div>
+                        <div class="step-label">Confirmation</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Details Card -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Payment Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Route</h6>
+                            <p class="mb-0">{{ booking.route }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Travel Date</h6>
+                            <p class="mb-0">{{ booking.date }}</p>
+                        </div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Seat Number</h6>
+                            <p class="mb-0">{{ booking.seat_number }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Amount</h6>
+                            <p class="mb-0 h5 text-primary">₹{{ booking.amount }}</p>
+                        </div>
+                    </div>
+
+                    <form action="{{ url_for('process_payment_and_generate_ticket') }}" method="POST">
+                        <input type="hidden" name="booking_id" value="{{ booking.id }}">
+                        
+                        <!-- Payment Options -->
+                        <div class="payment-options mb-4">
+                            <h6 class="mb-3">Select Payment Method</h6>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="radio" name="payment_method" id="upi" value="upi" checked>
+                                <label class="form-check-label" for="upi">
+                                    <i class="fas fa-mobile-alt me-2"></i>UPI Payment
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg px-5">
+                                <i class="fas fa-check-circle me-2"></i>Confirm Payment
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Download QR Code Section -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Download QR Code</h5>
+                </div>
+                <div class="card-body text-center">
+                    <p class="text-muted mb-3">Download your QR code for easy access to your ticket</p>
+                    <a href="{{ url_for('download_ticket', ticket_id=booking.id) }}" class="btn btn-outline-primary">
+                        <i class="fas fa-qrcode me-2"></i>Download QR Code
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.booking-progress .progress {
+    background-color: #e9ecef;
+    border-radius: 2px;
+}
+
+.progress-step {
+    text-align: center;
+    width: 100px;
+}
+
+.step-circle {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: #e9ecef;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 8px;
+    font-weight: bold;
+}
+
+.progress-step.active .step-circle {
+    background-color: #007bff;
+    color: white;
+}
+
+.progress-step.completed .step-circle {
+    background-color: #28a745;
+    color: white;
+}
+
+.step-label {
+    font-size: 14px;
+    color: #6c757d;
+}
+
+.progress-step.active .step-label {
+    color: #007bff;
+    font-weight: 500;
+}
+
+.progress-step.completed .step-label {
+    color: #28a745;
+    font-weight: 500;
+}
+
+.payment-options .form-check {
+    padding: 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.payment-options .form-check:hover {
+    background-color: #f8f9fa;
+}
+
+.payment-options .form-check-input:checked + .form-check-label {
+    color: #0d6efd;
+    font-weight: 500;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function processPayment(event) {
+    event.preventDefault();
+    const form = event.target;
+    const submitBtn = form.querySelector('button[type="submit"]');
+    
+    // Disable submit button and show loading state
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+    
+    try {
+        const response = await fetch('/process_payment', {
+            method: 'POST',
+            body: new FormData(form)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Show success message
+            Swal.fire({
+                icon: 'success',
+                title: 'Payment Successful!',
+                text: 'Redirecting to your ticket...',
+                timer: 2000,
+                showConfirmButton: false
+            }).then(() => {
+                window.location.href = result.redirect_url;
+            });
+        } else {
+            throw new Error(result.message || 'Payment failed');
+        }
+    } catch (error) {
+        // Show error message
+        Swal.fire({
+            icon: 'error',
+            title: 'Payment Failed',
+            text: error.message || 'Please try again later',
+            confirmButtonText: 'OK'
+        });
+        
+        // Reset button state
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = 'Pay ₹{{ booking.amount }}';
+    }
+    
+    return false;
+}
+</script>
+
+<!-- Add SweetAlert2 for better notifications -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+{% endblock %} 

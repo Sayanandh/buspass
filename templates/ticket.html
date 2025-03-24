@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}E-Ticket - E-Pass System{% endblock %}
+
+{% block content %}
+<div class="container-fluid ticket-container">
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0">E-Ticket</h3>
+                    <span class="badge bg-success px-3 py-2">Confirmed</span>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row gx-4">
+                        <!-- QR Code Section -->
+                        <div class="col-lg-4 text-center mb-4 mb-lg-0">
+                            <div class="qr-code-container p-3 bg-light rounded">
+                                <img src="{{ ticket.qr_code }}" alt="Ticket QR Code" class="img-fluid qr-code mb-3">
+                                <div class="text-muted fs-6">Ticket ID: {{ ticket.id }}</div>
+                            </div>
+                        </div>
+
+                        <!-- Ticket Details Section -->
+                        <div class="col-lg-8">
+                            <div class="ticket-details">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="detail-row">
+                                            <h6 class="detail-label">Passenger</h6>
+                                            <p class="detail-value">{{ ticket.student_name }}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="detail-row">
+                                            <h6 class="detail-label">Route</h6>
+                                            <p class="detail-value">{{ ticket.route }}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="detail-row">
+                                            <h6 class="detail-label">Travel Date</h6>
+                                            <p class="detail-value">{{ ticket.date }}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="detail-row">
+                                            <h6 class="detail-label">Seat Number</h6>
+                                            <p class="detail-value">{{ ticket.seat_number }}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="detail-row">
+                                            <h6 class="detail-label">Amount Paid</h6>
+                                            <p class="detail-value text-success fw-bold">₹{{ ticket.amount }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Instructions Section -->
+                    <div class="alert alert-info mb-4 p-3">
+                        <h6 class="alert-heading mb-2">
+                            <i class="fas fa-info-circle me-2"></i>Important Instructions
+                        </h6>
+                        <ul class="mb-0">
+                            <li class="mb-2">Please show this QR code to the bus conductor before boarding.</li>
+                            <li class="mb-2">This ticket is valid only for the date and route mentioned above.</li>
+                            <li>Please arrive at least 10 minutes before departure time.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="{{ url_for('download_ticket', ticket_id=ticket.id) }}" class="btn btn-primary px-4 py-2">
+                            <i class="fas fa-download me-2"></i>Download Ticket
+                        </a>
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary px-4 py-2">
+                            <i class="fas fa-home me-2"></i>Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.ticket-container {
+    width: 50vw;
+    max-width: none;
+    padding: 1rem;
+    margin: 0 auto;
+    position: relative;
+}
+
+.card {
+    margin: 0 auto;
+    border: none;
+    border-radius: 1rem;
+    max-width: 900px;
+}
+
+.card-header {
+    border-bottom: 1px solid #eee;
+    border-radius: 1rem 1rem 0 0 !important;
+    padding: 1rem 1.5rem;
+}
+
+.card-body {
+    padding: 1.5rem !important;
+}
+
+.qr-code-container {
+    border: 1px solid #dee2e6;
+    border-radius: 1rem;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 1rem !important;
+}
+
+.qr-code {
+    max-width: 100%;
+    height: auto;
+}
+
+.ticket-details {
+    height: 100%;
+}
+
+.detail-row {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    height: 100%;
+    transition: all 0.3s ease;
+}
+
+.detail-row:hover {
+    background-color: #e9ecef;
+    transform: translateY(-2px);
+}
+
+.detail-label {
+    color: #6c757d;
+    font-size: 0.875rem;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.25rem;
+}
+
+.detail-value {
+    font-size: 1.25rem;
+    margin: 0;
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+.alert-info {
+    background-color: #f8f9fa;
+    border-color: #e9ecef;
+    color: #495057;
+    border-radius: 0.75rem;
+    font-size: 0.9rem;
+}
+
+.alert-info ul {
+    padding-left: 1.25rem;
+    margin-bottom: 0;
+}
+
+.badge {
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 992px) {
+    .ticket-container {
+        width: 95vw;
+        padding: 0.5rem;
+    }
+
+    .card-body {
+        padding: 1rem !important;
+    }
+
+    .ticket-details {
+        margin-top: 1.5rem;
+    }
+    
+    .detail-value {
+        font-size: 1.1rem;
+    }
+    
+    .detail-row {
+        padding: 0.75rem;
+    }
+}
+
+@media (min-width: 1400px) {
+    .ticket-container {
+        width: 50vw;
+        padding: 1.5rem;
+    }
+
+    .card {
+        max-width: 1000px;
+    }
+
+    .card-body {
+        padding: 2rem !important;
+    }
+
+    .detail-value {
+        font-size: 1.5rem;
+    }
+}
+</style>
+{% endblock %} 
