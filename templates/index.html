@@ -1,33 +1,57 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
+<div class="row">
+    <div class="col-lg-8 col-xl-7 mx-auto">
         <div class="card">
-            <div class="card-header">
-                <ul class="nav nav-tabs card-header-tabs">
-                    <li class="nav-item">
-                        <a class="nav-link active" id="login-tab" data-bs-toggle="tab" href="#login">Login</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" id="register-tab" data-bs-toggle="tab" href="#register">Register</a>
-                    </li>
-                </ul>
+            <div class="card-header text-center">
+                <h4 class="mb-0">Welcome to E-Pass System</h4>
+                <p class="text-secondary mb-0">Please login to your account or register</p>
             </div>
             <div class="card-body">
+                <ul class="nav nav-tabs nav-fill mb-4">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="login-tab" data-bs-toggle="tab" href="#login">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="register-tab" data-bs-toggle="tab" href="#register">
+                            <i class="fas fa-user-plus me-2"></i>Register
+                        </a>
+                    </li>
+                </ul>
+
                 <div class="tab-content">
                     <!-- Login Form -->
                     <div class="tab-pane fade show active" id="login">
                         <form id="loginForm" onsubmit="return handleLogin(event)">
                             <div class="mb-3">
                                 <label for="loginUsername" class="form-label">Username</label>
-                                <input type="text" class="form-control" id="loginUsername" required>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                    <input type="text" class="form-control" id="loginUsername" required 
+                                           placeholder="Enter your username">
+                                </div>
                             </div>
-                            <div class="mb-3">
+                            <div class="mb-4">
                                 <label for="loginPassword" class="form-label">Password</label>
-                                <input type="password" class="form-control" id="loginPassword" required>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                    <input type="password" class="form-control" id="loginPassword" required 
+                                           placeholder="Enter your password">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('loginPassword')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
                             </div>
-                            <button type="submit" class="btn btn-primary">Login</button>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary" id="loginButton">
+                                    <span class="spinner-border spinner-border-sm d-none me-2" role="status" aria-hidden="true"></span>
+                                    Login
+                                </button>
+                            </div>
+                            <div class="alert alert-danger mt-3 d-none" id="loginError"></div>
                         </form>
                     </div>
                     
@@ -36,29 +60,62 @@
                         <form id="registerForm" onsubmit="return handleRegister(event)">
                             <div class="mb-3">
                                 <label for="fullName" class="form-label">Full Name</label>
-                                <input type="text" class="form-control" id="fullName" required>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                    <input type="text" class="form-control" id="fullName" required 
+                                           placeholder="Enter your full name">
+                                </div>
                             </div>
                             <div class="mb-3">
                                 <label for="username" class="form-label">Username</label>
-                                <input type="text" class="form-control" id="username" required>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-at"></i></span>
+                                    <input type="text" class="form-control" id="username" required 
+                                           placeholder="Choose a username">
+                                </div>
                             </div>
                             <div class="mb-3">
                                 <label for="email" class="form-label">Email</label>
-                                <input type="email" class="form-control" id="email" required>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                    <input type="email" class="form-control" id="email" required 
+                                           placeholder="Enter your email">
+                                </div>
                             </div>
                             <div class="mb-3">
                                 <label for="phone" class="form-label">Phone Number</label>
-                                <input type="tel" class="form-control" id="phone" required>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                    <input type="tel" class="form-control" id="phone" required 
+                                           placeholder="Enter your phone number">
+                                </div>
                             </div>
                             <div class="mb-3">
                                 <label for="collegeId" class="form-label">College ID</label>
-                                <input type="text" class="form-control" id="collegeId" required>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-id-card"></i></span>
+                                    <input type="text" class="form-control" id="collegeId" required 
+                                           placeholder="Enter your college ID">
+                                </div>
                             </div>
-                            <div class="mb-3">
+                            <div class="mb-4">
                                 <label for="password" class="form-label">Password</label>
-                                <input type="password" class="form-control" id="password" required>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                    <input type="password" class="form-control" id="password" required 
+                                           placeholder="Create a password">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('password')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
                             </div>
-                            <button type="submit" class="btn btn-primary">Register</button>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary" id="registerButton">
+                                    <span class="spinner-border spinner-border-sm d-none me-2" role="status" aria-hidden="true"></span>
+                                    Register
+                                </button>
+                            </div>
+                            <div class="alert alert-danger mt-3 d-none" id="registerError"></div>
                         </form>
                     </div>
                 </div>
@@ -70,8 +127,49 @@
 
 {% block scripts %}
 <script>
+function togglePassword(inputId) {
+    const input = document.getElementById(inputId);
+    const icon = input.nextElementSibling.querySelector('i');
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+
+function showError(formId, message) {
+    const errorDiv = document.getElementById(`${formId}Error`);
+    errorDiv.textContent = message;
+    errorDiv.classList.remove('d-none');
+}
+
+function hideError(formId) {
+    const errorDiv = document.getElementById(`${formId}Error`);
+    errorDiv.classList.add('d-none');
+}
+
+function setLoading(buttonId, isLoading) {
+    const button = document.getElementById(buttonId);
+    const spinner = button.querySelector('.spinner-border');
+    
+    if (isLoading) {
+        button.disabled = true;
+        spinner.classList.remove('d-none');
+    } else {
+        button.disabled = false;
+        spinner.classList.add('d-none');
+    }
+}
+
 async function handleLogin(event) {
     event.preventDefault();
+    hideError('login');
+    setLoading('loginButton', true);
     
     const data = {
         username: document.getElementById('loginUsername').value,
@@ -92,15 +190,19 @@ async function handleLogin(event) {
         if (response.ok) {
             window.location.href = '/dashboard';
         } else {
-            alert(result.error);
+            showError('login', result.error || 'Invalid credentials');
         }
     } catch (error) {
-        alert('Error connecting to server');
+        showError('login', 'Error connecting to server. Please try again.');
+    } finally {
+        setLoading('loginButton', false);
     }
 }
 
 async function handleRegister(event) {
     event.preventDefault();
+    hideError('register');
+    setLoading('registerButton', true);
     
     const data = {
         full_name: document.getElementById('fullName').value,
@@ -123,14 +225,23 @@ async function handleRegister(event) {
         const result = await response.json();
         
         if (response.ok) {
-            alert('Registration successful! Please login.');
-            document.getElementById('login-tab').click();
-            document.getElementById('registerForm').reset();
+            const successAlert = document.createElement('div');
+            successAlert.className = 'alert alert-success mt-3';
+            successAlert.textContent = 'Registration successful! Please login.';
+            document.getElementById('registerForm').appendChild(successAlert);
+            
+            setTimeout(() => {
+                document.getElementById('login-tab').click();
+                document.getElementById('registerForm').reset();
+                successAlert.remove();
+            }, 2000);
         } else {
-            alert(result.error);
+            showError('register', result.error || 'Registration failed');
         }
     } catch (error) {
-        alert('Error connecting to server');
+        showError('register', 'Error connecting to server. Please try again.');
+    } finally {
+        setLoading('registerButton', false);
     }
 }
 </script>
